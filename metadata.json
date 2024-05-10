@@ -1,0 +1,20 @@
+{
+    "KPlugin": {
+        "Name": "Return to Tile",
+        "Description": "Returns an unmaximised window to its previously assigned tile",
+        "Icon": "preferences-system-windows",
+
+        "Authors": [
+            {
+                "Email": "s.gicic@outlook.com",
+                "Name": "Seid Gicic"
+            }
+        ],
+        "Id": "returnToTile",
+        "Version": "1.0",
+        "License": "GPLv3"
+    },
+    "X-Plasma-API": "javascript",
+    "X-Plasma-MainScript": "code/main.js",
+    "KPackageStructure": "KWin/Script"
+}
