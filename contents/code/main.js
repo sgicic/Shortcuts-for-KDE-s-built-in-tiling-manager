@@ -6,6 +6,8 @@
     License: GPLv3
 */
 
+//Todo: Add Multimonitor support (maybe)
+
 var x;
 var y;
 var height;

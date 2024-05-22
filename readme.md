@@ -6,3 +6,6 @@ Adds Shortcuts to quickly assign windows to a tile, as well as shortcuts to navi
 
 # Important Issues
 Does not work on multi monitor setups and is a little buggy on Wayland.
+
+# Todo
+Add Multimonitor Support (maybe).
