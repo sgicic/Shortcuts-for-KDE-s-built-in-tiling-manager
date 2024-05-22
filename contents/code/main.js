@@ -1,3 +1,10 @@
+/*
+    Name: returnToTile
+    Description: Returns a Maximized window to its previously assigned tile upon unmaximization and adds shortcuts to assign windows to tiles as well as shortcuts to navigate between tiles.
+    Author: Seid Gicic
+    Version: 1.1
+*/
+
 var x;
 var y;
 var height;
