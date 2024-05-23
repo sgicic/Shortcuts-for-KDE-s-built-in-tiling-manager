@@ -117,7 +117,7 @@ function registerShortcuts(){
 
 
 function saveOldData(client){
-    if (client.size.height == workspace.activeScreen.geometry.height && client.size.width == workspace.activeScreen.geometry.width){
+    if (client.size.height == client.output.geometry.height && client.size.width == client.output.geometry.width){
         //about to change from maximized to unmaximized, do nothing
     }else{
         //about to change from tile location/size to maximized, save the tile window geometry so it can be restored later
@@ -138,7 +138,7 @@ function saveOldData(client){
 }
 
 function restoreOldData(client){
-    if (client.size.height == workspace.activeScreen.geometry.height && client.size.width == workspace.activeScreen.geometry.width){
+    if (client.size.height == client.output.geometry.height && client.size.width == client.output.geometry.width){
         //changed from tile to maximized, do nothing
     }else{
         //changed from maximized to tile, apply previously saved geometry data
