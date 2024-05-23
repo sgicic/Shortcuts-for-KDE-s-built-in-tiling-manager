@@ -30,6 +30,7 @@ function init(){
 }
 
 function assignNumbersToTiles(){
+    print("AAAHHH I'M ASSOOOOONING");
     tileList = [];
     const counter = { current: 1 };
 
@@ -40,11 +41,7 @@ function assignNumbersToTiles(){
             loopThroughTiles(tile, counter);
         });
     });
-
-
-
 }
-
 
 function loopThroughTiles(parentTile, counter){
     if (parentTile.tiles.length != 0){
@@ -52,6 +49,7 @@ function loopThroughTiles(parentTile, counter){
             loopThroughTiles(childtile, counter);
         });
     }else{
+        print(counter.current +" "+parentTile+" gepusht");
         tileList.push({number: counter.current, tile: parentTile});
         parentTile.childTilesChanged.connect(assignNumbersToTiles);
         counter.current++;
@@ -70,11 +68,6 @@ function assignWindowToTile(clientwindow, tileNr){
     }else{
         if (clientwindow.normalWindow){
             var selectedtile = tileList[tileNr-1].tile;
-            Object.keys(selectedtile).forEach((prop)=> print(prop));
-            print(selectedtile.relativeGeometry);
-            print(selectedtile.absoluteGeometry);
-            print(selectedtile.absoluteGeometryInScreen);
-            print(selectedtile.padding);
             clientwindow.frameGeometry.x = selectedtile.absoluteGeometry.x+selectedtile.padding;
             clientwindow.frameGeometry.y = selectedtile.absoluteGeometry.y+selectedtile.padding;
             clientwindow.frameGeometry.width = selectedtile.absoluteGeometry.width-selectedtile.padding*2;
@@ -88,13 +81,8 @@ function assignWindowToTile(clientwindow, tileNr){
 function activateTile(tilenumber){
     var length = tileList[tilenumber-1].tile.windows.length;
     var windows = tileList[tilenumber-1].tile.windows;
-    print("-----------NEWHERE");
-    print(workspace.activeScreen.geometry);
-    Object.keys(workspace.activeScreen).forEach((prop)=> print(prop));
     for (var i = windows.length-1; i > -1; i--){
         windows[i].olddesktops = [workspace.currentDesktop];
-        //   print(windows[i].desktops);
-        //  print(windows[i].olddesktops);
         if (windows[i].desktops[0] === workspace.currentDesktop){
             //Only activate a window if it's on the currently active Desktop.
             //Loop Backwards so a newly added window will be selected before older ones on the same tile
@@ -106,15 +94,17 @@ function activateTile(tilenumber){
 }
 
 function registerShortcuts(){
-    var numbers = [1,2,3,4,5,6,7,8,9];
+    //Meta+(Function key) to assign a window to a tile
+    var numbers = [1,2,3,4,5,6,7,8,9,10,11,12];
     numbers.forEach((number) => {
         registerShortcut("Assign to Tile "+number, "Assign to Tile "+number, "Meta+F"+number, function(){assignWindowToTile(workspace.activeWindow, number)});
-
+    });
+    //Ctrl+Key from number row) to activate a window in a specific tile
+    var numbers = [1,2,3,4,5,6,7,8,9,0,escape("'"),escape("^")];
+    numbers.forEach((number) => {
         registerShortcut("Activate Tile "+number, "Activate Tile "+number, "Ctrl+"+number, function(){activateTile(number)});
-    })
+    });
 }
-
-
 
 function saveOldData(client){
     if (client.size.height == client.output.geometry.height && client.size.width == client.output.geometry.width){
@@ -125,15 +115,8 @@ function saveOldData(client){
         client.oldy = client.frameGeometry.y;
         client.oldheight = client.frameGeometry.height;
         client.oldwidth = client.frameGeometry.width;
-        //  client.olddesktop = client.currentDesktop;
         client.oldtile = client.tile;
         client.whatever = 100;
-        print(client.oldx);
-        print(client.oldy);
-        print(client.oldheight);
-        print(client.oldwidth);
-        print(client.oldtile);
-        print(client.whatever);
     }
 }
 
@@ -147,8 +130,6 @@ function restoreOldData(client){
 }
 
 
-
-
 workspace.currentDesktopChanged.connect(assignNumbersToTiles);
 
 workspace.windowAdded.connect(setupTileConnection);
@@ -159,9 +140,6 @@ function setupTileConnection(client){
     });
     client.maximizedChanged.connect(function(){
         restoreOldData(client)
-    });
-    client.tileChanged.connect(function(){
-        print("why is this here");
     });
 }
 
