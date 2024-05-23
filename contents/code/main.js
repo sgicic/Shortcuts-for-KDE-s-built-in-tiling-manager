@@ -1,12 +1,11 @@
 /*
  *    Name: returnToTile
- *    Description: Returns a Maximized window to its previously assigned tile upon unmaximization and adds shortcuts to assign windows to tiles as well as shortcuts to navigate between tiles.
+ *    Description: Returns a Maximized window to its previously assigned tile upon unmaximization and adds shortcuts to assign windows to tiles as well as shortcuts to navigate between tiles. Supports Multimonitor setups now.
  *    Author: Seid Gicic
- *    Version: 1.1
+ *    E-Mail: s.gicic@outlook.com
+ *    Version: 1.2
  *    License: GPLv3
  */
-
-//Todo: Add Multimonitor support (maybe)
 
 var tileList = [];
 
