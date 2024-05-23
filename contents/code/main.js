@@ -30,7 +30,6 @@ function init(){
 }
 
 function assignNumbersToTiles(){
-    print("AAAHHH I'M ASSOOOOONING");
     tileList = [];
     const counter = { current: 1 };
 
@@ -49,7 +48,6 @@ function loopThroughTiles(parentTile, counter){
             loopThroughTiles(childtile, counter);
         });
     }else{
-        print(counter.current +" "+parentTile+" gepusht");
         tileList.push({number: counter.current, tile: parentTile});
         parentTile.childTilesChanged.connect(assignNumbersToTiles);
         counter.current++;
@@ -66,7 +64,7 @@ function assignWindowToTile(clientwindow, tileNr){
         clientwindow.tile = clientwindow.oldtile;
         clientwindow.desktops = [workspace.currentDesktop];
     }else{
-        if (clientwindow.normalWindow){
+        if (clientwindow.normalWindow && clientwindow.tile != tileList[tileNr-1].tile){
             var selectedtile = tileList[tileNr-1].tile;
             clientwindow.frameGeometry.x = selectedtile.absoluteGeometry.x+selectedtile.padding;
             clientwindow.frameGeometry.y = selectedtile.absoluteGeometry.y+selectedtile.padding;
@@ -81,6 +79,7 @@ function assignWindowToTile(clientwindow, tileNr){
 function activateTile(tilenumber){
     var length = tileList[tilenumber-1].tile.windows.length;
     var windows = tileList[tilenumber-1].tile.windows;
+
     for (var i = windows.length-1; i > -1; i--){
         windows[i].olddesktops = [workspace.currentDesktop];
         if (windows[i].desktops[0] === workspace.currentDesktop){
@@ -94,13 +93,13 @@ function activateTile(tilenumber){
 }
 
 function registerShortcuts(){
-    //Meta+(Function key) to assign a window to a tile
+    //Meta+(Function key) to assign a window to a tile, Ctrl+number to activate a window on a specific tile.
     var numbers = [1,2,3,4,5,6,7,8,9,10];
     numbers.forEach((number) => {
         registerShortcut("Assign to Tile "+number, "Assign to Tile "+number, "Meta+F"+number, function(){assignWindowToTile(workspace.activeWindow, number)});
 
-        if (number = 10){
-            registerShortcut("Activate Tile 10", "Activate Tile 10", "Ctrl+0", function(){activateTile(number)});
+        if (number == 10){
+            registerShortcut("Activate Tile 10", "Activate Tile 10", "Ctrl+0", function(){activateTile(0)});
         }else{
             registerShortcut("Activate Tile "+number, "Activate Tile "+number, "Ctrl+"+number, function(){activateTile(number)});
         }
@@ -117,7 +116,6 @@ function saveOldData(client){
         client.oldheight = client.frameGeometry.height;
         client.oldwidth = client.frameGeometry.width;
         client.oldtile = client.tile;
-        client.whatever = 100;
     }
 }
 
