@@ -1,40 +1,48 @@
 /*
-    Name: returnToTile
-    Description: Returns a Maximized window to its previously assigned tile upon unmaximization and adds shortcuts to assign windows to tiles as well as shortcuts to navigate between tiles.
-    Author: Seid Gicic
-    Version: 1.1
-    License: GPLv3
-*/
+ *    Name: returnToTile
+ *    Description: Returns a Maximized window to its previously assigned tile upon unmaximization and adds shortcuts to assign windows to tiles as well as shortcuts to navigate between tiles.
+ *    Author: Seid Gicic
+ *    Version: 1.1
+ *    License: GPLv3
+ */
 
 //Todo: Add Multimonitor support (maybe)
 
-var x;
-var y;
-var height;
-var width;
-var tile;
-var desktop;
-var tileList;
-
+var tileList = [];
 
 function init(){
     var clients = workspace.windowList();
     for (var i = 0; i < clients.length; i++){
         if (clients[i].tile != null){
-            setupConnection(clients[i]);
+            setupTileConnection(clients[i]);
         }
     }
+
+    //loop through screens and setup connections
+    workspace.screens.forEach((ascreen) => {
+        var tileManager = workspace.tilingForScreen(ascreen);
+        tileManager.rootTile.layoutModified.connect(assignNumbersToTiles);
+        tileManager.rootTile.childTilesChanged.connect(assignNumbersToTiles);
+    });
+
     assignNumbersToTiles();
     registerShortcuts();
 }
 
 function assignNumbersToTiles(){
-    const counter = { current: 1 };
-    var rootTile = workspace.tilingForScreen(workspace.activeScreen).rootTile;
     tileList = [];
-    rootTile.tiles.forEach((tile) => {
-        loopThroughTiles(tile, counter);
+    const counter = { current: 1 };
+
+    workspace.screens.forEach((ascreen) => {
+        var rootTile = workspace.tilingForScreen(ascreen).rootTile;
+
+        rootTile.tiles.forEach((tile) => {
+            loopThroughTiles(tile, counter);
+        });
     });
+
+
+
 }
 
 
@@ -51,28 +59,42 @@ function loopThroughTiles(parentTile, counter){
 }
 
 function assignWindowToTile(clientwindow, tileNr){
+
     if (tileNr == "returnToTile"){
-        clientwindow.frameGeometry.x = x;
-        clientwindow.frameGeometry.y = y;
-        clientwindow.frameGeometry.width = width;
-        clientwindow.frameGeometry.height = height;
-        clientwindow.tile = tile;
-        clientwindow.desktops[0] = desktop;
+        clientwindow.frameGeometry.x = clientwindow.oldx;
+        clientwindow.frameGeometry.y = clientwindow.oldy;
+        clientwindow.frameGeometry.width = clientwindow.oldwidth;
+        clientwindow.frameGeometry.height = clientwindow.oldheight;
+        clientwindow.tile = clientwindow.oldtile;
+        clientwindow.desktops = [workspace.currentDesktop];
     }else{
-        var selectedtile = tileList[tileNr-1].tile;
-        clientwindow.frameGeometry.x = selectedtile.absoluteGeometry.x;
-        clientwindow.frameGeometry.y = selectedtile.absoluteGeometry.y;
-        clientwindow.frameGeometry.width = selectedtile.absoluteGeometry.width;
-        clientwindow.frameGeometry.height = selectedtile.absoluteGeometry.height;
-        clientwindow.tile = selectedtile;
-        clientwindow.desktops[0] = workspace.currentDesktop;
+        if (clientwindow.normalWindow){
+            var selectedtile = tileList[tileNr-1].tile;
+            Object.keys(selectedtile).forEach((prop)=> print(prop));
+            print(selectedtile.relativeGeometry);
+            print(selectedtile.absoluteGeometry);
+            print(selectedtile.absoluteGeometryInScreen);
+            print(selectedtile.padding);
+            clientwindow.frameGeometry.x = selectedtile.absoluteGeometry.x+selectedtile.padding;
+            clientwindow.frameGeometry.y = selectedtile.absoluteGeometry.y+selectedtile.padding;
+            clientwindow.frameGeometry.width = selectedtile.absoluteGeometry.width-selectedtile.padding*2;
+            clientwindow.frameGeometry.height = selectedtile.absoluteGeometry.height-selectedtile.padding*2;
+            clientwindow.tile = selectedtile;
+            clientwindow.desktops = [workspace.currentDesktop];
+        }
     }
 }
 
 function activateTile(tilenumber){
     var length = tileList[tilenumber-1].tile.windows.length;
     var windows = tileList[tilenumber-1].tile.windows;
+    print("-----------NEWHERE");
+    print(workspace.activeScreen.geometry);
+    Object.keys(workspace.activeScreen).forEach((prop)=> print(prop));
     for (var i = windows.length-1; i > -1; i--){
+        windows[i].olddesktops = [workspace.currentDesktop];
+        //   print(windows[i].desktops);
+        //  print(windows[i].olddesktops);
         if (windows[i].desktops[0] === workspace.currentDesktop){
             //Only activate a window if it's on the currently active Desktop.
             //Loop Backwards so a newly added window will be selected before older ones on the same tile
@@ -92,38 +114,58 @@ function registerShortcuts(){
     })
 }
 
-workspace.windowAdded.connect(setupConnection);
 
-function setupConnection(client){
-    client.tileChanged.connect(function(){
-        client.maximizedAboutToChange.connect(function(){
-            if (client.size.height == workspace.virtualScreenSize.height && client.size.width == workspace.virtualScreenSize.width){
-                //about to change from maximized to unmaximized, do nothing
-            }else{
-                //about to change from tile location/size to maximized, save the tile window geometry so it can be restored later
-                x = client.frameGeometry.x;
-                y = client.frameGeometry.y;
-                height = client.frameGeometry.height;
-                width = client.frameGeometry.width;
-                desktop = client.desktops[0];
-                tile = client.tile;
-            }
-        });
-        client.maximizedChanged.connect(function(){
-            if (client.size.height == workspace.virtualScreenSize.height && client.size.width == workspace.virtualScreenSize.width){
-                //changed from tile to maximized, do nothing
-            }else{
-                //changed from maximized to tile, apply previously saved geometry data
-                assignWindowToTile(client, "returnToTile");
-            }
-        });
-    });
+
+function saveOldData(client){
+    if (client.size.height == workspace.activeScreen.geometry.height && client.size.width == workspace.activeScreen.geometry.width){
+        //about to change from maximized to unmaximized, do nothing
+    }else{
+        //about to change from tile location/size to maximized, save the tile window geometry so it can be restored later
+        client.oldx = client.frameGeometry.x;
+        client.oldy = client.frameGeometry.y;
+        client.oldheight = client.frameGeometry.height;
+        client.oldwidth = client.frameGeometry.width;
+        //  client.olddesktop = client.currentDesktop;
+        client.oldtile = client.tile;
+        client.whatever = 100;
+        print(client.oldx);
+        print(client.oldy);
+        print(client.oldheight);
+        print(client.oldwidth);
+        print(client.oldtile);
+        print(client.whatever);
+    }
 }
 
-var tileManager = workspace.tilingForScreen(workspace.activeScreen);
-tileManager.rootTile.layoutModified.connect(assignNumbersToTiles);
+function restoreOldData(client){
+    if (client.size.height == workspace.activeScreen.geometry.height && client.size.width == workspace.activeScreen.geometry.width){
+        //changed from tile to maximized, do nothing
+    }else{
+        //changed from maximized to tile, apply previously saved geometry data
+        assignWindowToTile(client, "returnToTile");
+    }
+}
+
+
+
 
 workspace.currentDesktopChanged.connect(assignNumbersToTiles);
 
+workspace.windowAdded.connect(setupTileConnection);
+
+function setupTileConnection(client){
+    client.maximizedAboutToChange.connect(function(){
+        saveOldData(client)
+    });
+    client.maximizedChanged.connect(function(){
+        restoreOldData(client)
+    });
+    client.tileChanged.connect(function(){
+        print("why is this here");
+    });
+}
+
+
 init();
+
 
