@@ -95,14 +95,15 @@ function activateTile(tilenumber){
 
 function registerShortcuts(){
     //Meta+(Function key) to assign a window to a tile
-    var numbers = [1,2,3,4,5,6,7,8,9,10,11,12];
+    var numbers = [1,2,3,4,5,6,7,8,9,10];
     numbers.forEach((number) => {
         registerShortcut("Assign to Tile "+number, "Assign to Tile "+number, "Meta+F"+number, function(){assignWindowToTile(workspace.activeWindow, number)});
-    });
-    //Ctrl+Key from number row) to activate a window in a specific tile
-    var numbers = [1,2,3,4,5,6,7,8,9,0,escape("'"),escape("^")];
-    numbers.forEach((number) => {
-        registerShortcut("Activate Tile "+number, "Activate Tile "+number, "Ctrl+"+number, function(){activateTile(number)});
+
+        if (number = 10){
+            registerShortcut("Activate Tile 10", "Activate Tile 10", "Ctrl+0", function(){activateTile(number)});
+        }else{
+            registerShortcut("Activate Tile "+number, "Activate Tile "+number, "Ctrl+"+number, function(){activateTile(number)});
+        }
     });
 }
 
