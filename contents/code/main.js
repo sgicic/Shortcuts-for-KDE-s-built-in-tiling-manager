@@ -117,6 +117,10 @@ function saveOldData(client){
         client.oldwidth = client.frameGeometry.width;
         client.oldtile = client.tile;
     }
+    // remove assigned tile if window is moved with mouse
+    if (client.move){
+        client.tile = null;
+    }
 }
 
 function restoreOldData(client){
@@ -137,14 +141,7 @@ function setupWindowConnections(client){
     });
     client.frameGeometryChanged.connect(function(){
         saveOldData(client);
-        removeAssignedTileOnMouseMove(client);
     });
-}
-
-function removeAssignedTileOnMouseMove(client){
-    if (client.move){
-        client.tile = null;
-    }
 }
 
 init();

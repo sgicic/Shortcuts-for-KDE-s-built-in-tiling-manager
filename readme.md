@@ -1,11 +1,9 @@
 # KWin Script returnToTile
-When using the new Tiles feature in KDE (Super+t), maximizing and subsequently unmaximizing a tiled window does not return the window to its previously asssigned tile. This Script "fixes" the issue (apparently it's intended behaviour). 
+Extends KDE's built-in tiling feature with shortcuts to quckly assign windows to tiles, as well as shortcuts to navigate between tiles and their respective windows. Also returns a maximized Window to its previously assigned tile upon unmaximization. Works on X11 as well as Wayland.
 
-# Version 1.1
-Adds Shortcuts to quickly assign windows to a tile(Meta+F1-10), as well as shortcuts to navigate between tiles(Ctrl+0-9).
+# Default Shortcuts
+The idea behind the script was to use the number and Function keys for the shortcuts, so naturally only 10 tiles are supported.
 
-# Version 1.2 
-Supports Multimonitor Setups now.
+Meta+F1-10 assigns a window the specified tile.
 
-# Important Issues
-On wayland, the window placement of certain software can be buggy, which I assume is an issue with that software's wayland implementation.
+Ctrl+0-9 activates the window assigned to that specific tile, where number 0 counts as 10.
