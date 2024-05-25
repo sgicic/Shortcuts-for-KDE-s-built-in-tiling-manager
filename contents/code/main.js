@@ -13,7 +13,7 @@ function init(){
     var clients = workspace.windowList();
     for (var i = 0; i < clients.length; i++){
         if (clients[i].tile != null){
-            setupTileConnection(clients[i]);
+            setupWindowConnections(clients[i]);
         }
     }
 
@@ -64,6 +64,7 @@ function assignWindowToTile(clientwindow, tileNr){
         clientwindow.desktops = [workspace.currentDesktop];
     }else{
         if (clientwindow.normalWindow && clientwindow.tile != tileList[tileNr-1].tile){
+            clientwindow.setMaximize(false,false);
             var selectedtile = tileList[tileNr-1].tile;
             clientwindow.frameGeometry.x = selectedtile.absoluteGeometry.x+selectedtile.padding;
             clientwindow.frameGeometry.y = selectedtile.absoluteGeometry.y+selectedtile.padding;
@@ -127,20 +128,24 @@ function restoreOldData(client){
     }
 }
 
+workspace.windowAdded.connect(setupWindowConnections);
 
-workspace.currentDesktopChanged.connect(assignNumbersToTiles);
-
-workspace.windowAdded.connect(setupTileConnection);
-
-function setupTileConnection(client){
-    client.maximizedAboutToChange.connect(function(){
-        saveOldData(client)
-    });
+function setupWindowConnections(client){
+    saveOldData(client);
     client.maximizedChanged.connect(function(){
-        restoreOldData(client)
+        restoreOldData(client);
+    });
+    client.frameGeometryChanged.connect(function(){
+        saveOldData(client);
+        removeAssignedTileOnMouseMove(client);
     });
 }
 
+function removeAssignedTileOnMouseMove(client){
+    if (client.move){
+        client.tile = null;
+    }
+}
 
 init();
 
