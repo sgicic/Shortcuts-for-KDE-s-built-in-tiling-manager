@@ -1,5 +1,5 @@
 /*
- *    Name: returnToTile
+ *    Name: Shortcuts for KDE's built-in tiling manager
  *    Description: Returns a Maximized window to its previously assigned tile upon unmaximization and adds shortcuts to assign windows to tiles as well as shortcuts to navigate between tiles. Supports Multimonitor setups now.
  *    Author: Seid Gicic
  *    E-Mail: s.gicic@outlook.com
@@ -141,7 +141,9 @@ function registerShortcuts(){
 
 //save old geometry data in client's properties
 function saveOldData(client, bypasscheck){
-    if ((client.size.height < client.output.geometry.height && client.size.width < client.output.geometry.width) || bypasscheck){
+    if (client.size.height == client.output.geometry.height && client.size.width == client.output.geometry.width){
+        //about to change from maximized to unmaximized, do nothing
+    }else{
         //about to change from tile location/size to maximized, save the tile window geometry so it can be restored later
         client.oldx = client.frameGeometry.x;
         client.oldy = client.frameGeometry.y;
@@ -149,14 +151,19 @@ function saveOldData(client, bypasscheck){
         client.oldwidth = client.frameGeometry.width;
         client.oldtile = client.tile;
     }
+    // remove assigned tile if window is moved with mouse
+    if (client.move){
+        client.tile = null;
+    }
 }
 
 //restore old geometry data from a client
 function restoreOldData(client){
-    if (client.size.height < client.output.geometry.height && client.size.width < client.output.geometry.width){
+    if (client.size.height == client.output.geometry.height && client.size.width == client.output.geometry.width){
+        //changed from tile to maximized, do nothing
+    }else{
         //changed from maximized to tile, apply previously saved geometry data
-        returnToTile(client);
-
+        assignWindowToTile(client, "returnToTile");
     }
 }
 
@@ -164,18 +171,10 @@ function restoreOldData(client){
 function setupWindowConnections(client){
     client.maximizedChanged.connect(function(){
         restoreOldData(client);
-
-    });
-    client.maximizedAboutToChange.connect(function(){
-        saveOldData(client);
-
     });
     client.frameGeometryChanged.connect(function(){
-        // remove assigned tile if window is moved with mouse
-        if (client.move){
-            client.tile = null;
-        }
-    })
+        saveOldData(client);
+    });
 }
 
 workspace.windowAdded.connect(setupWindowConnections);
