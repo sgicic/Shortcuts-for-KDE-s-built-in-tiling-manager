@@ -141,9 +141,7 @@ function registerShortcuts(){
 
 //save old geometry data in client's properties
 function saveOldData(client, bypasscheck){
-    if (client.size.height == client.output.geometry.height && client.size.width == client.output.geometry.width){
-        //about to change from maximized to unmaximized, do nothing
-    }else{
+    if ((client.size.height < client.output.geometry.height && client.size.width < client.output.geometry.width) || bypasscheck){
         //about to change from tile location/size to maximized, save the tile window geometry so it can be restored later
         client.oldx = client.frameGeometry.x;
         client.oldy = client.frameGeometry.y;
@@ -151,19 +149,14 @@ function saveOldData(client, bypasscheck){
         client.oldwidth = client.frameGeometry.width;
         client.oldtile = client.tile;
     }
-    // remove assigned tile if window is moved with mouse
-    if (client.move){
-        client.tile = null;
-    }
 }
 
 //restore old geometry data from a client
 function restoreOldData(client){
-    if (client.size.height == client.output.geometry.height && client.size.width == client.output.geometry.width){
-        //changed from tile to maximized, do nothing
-    }else{
+    if (client.size.height < client.output.geometry.height && client.size.width < client.output.geometry.width){
         //changed from maximized to tile, apply previously saved geometry data
-        assignWindowToTile(client, "returnToTile");
+        returnToTile(client);
+
     }
 }
 
@@ -171,13 +164,19 @@ function restoreOldData(client){
 function setupWindowConnections(client){
     client.maximizedChanged.connect(function(){
         restoreOldData(client);
+
+    });
+    client.maximizedAboutToChange.connect(function(){
+        saveOldData(client);
+
     });
     client.frameGeometryChanged.connect(function(){
-        saveOldData(client);
-    });
+        // remove assigned tile if window is moved with mouse
+        if (client.move){
+            client.tile = null;
+        }
+    })
 }
 
 workspace.windowAdded.connect(setupWindowConnections);
 init();
-
-
