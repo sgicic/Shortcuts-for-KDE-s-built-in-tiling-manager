@@ -1,7 +1,7 @@
 {
     "KPlugin": {
-        "Name": "Shortcuts for KDE's built-in tiling feature",
-        "Description": "Adds shortcuts for quickly tiling and accessing windows in tiles, returns unmaximized windows to their previous tile",
+        "Name": "Return to Tile",
+        "Description": "Returns an unmaximised window to its previously assigned tile as well as adds shortcuts for convenience",
         "Icon": "preferences-system-windows",
 
         "Authors": [
@@ -11,7 +11,7 @@
             }
         ],
         "Id": "returnToTile",
-        "Version": "1.2.1",
+        "Version": "1.2",
         "License": "GPLv3"
     },
     "X-Plasma-API": "javascript",
