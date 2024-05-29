@@ -18,7 +18,7 @@ function init(){
         }
     }
 
-    //loop through screens and setup connections
+    //loop through screens and setup connections for their tiles
     workspace.screens.forEach((ascreen) => {
         var tileManager = workspace.tilingForScreen(ascreen);
         tileManager.rootTile.layoutModified.connect(assignNumbersToTiles);
@@ -73,9 +73,7 @@ function assignWindowToTile(clientwindow, tileNr){
                 workspace.raiseWindow(windowAlreadyInTile);
             }
         }
-        if (clientwindow.size.height == clientwindow.output.geometry.height && clientwindow.size.width == clientwindow.output.geometry.width){
-            clientwindow.setMaximize(false,false);
-        }
+        clientwindow.setMaximize(false,false);
         clientwindow.frameGeometry.x = selectedtile.absoluteGeometry.x+selectedtile.padding;
         clientwindow.frameGeometry.y = selectedtile.absoluteGeometry.y+selectedtile.padding;
         clientwindow.frameGeometry.width = selectedtile.absoluteGeometry.width-selectedtile.padding*2;
@@ -83,24 +81,7 @@ function assignWindowToTile(clientwindow, tileNr){
         clientwindow.tile = selectedtile;
         clientwindow.desktops = [workspace.currentDesktop];
         workspace.raiseWindow(clientwindow);
-        //save old values as well, because maximize signals get called again because of the setMaximize call above
-        //setMaximize needs to be called since it's the only way to change the read-only value of the maximizable property
-        clientwindow.oldx = selectedtile.absoluteGeometry.x+selectedtile.padding;
-        clientwindow.oldy = selectedtile.absoluteGeometry.y+selectedtile.padding;
-        clientwindow.oldheight = selectedtile.absoluteGeometry.height-selectedtile.padding*2;
-        clientwindow.oldwidth = selectedtile.absoluteGeometry.width-selectedtile.padding*2;
-        clientwindow.oldtile = selectedtile;
     }
-}
-
-//return a window to its previous tile
-function returnToTile(clientwindow){
-    clientwindow.frameGeometry.x = clientwindow.oldx;
-    clientwindow.frameGeometry.y = clientwindow.oldy;
-    clientwindow.frameGeometry.width = clientwindow.oldwidth;
-    clientwindow.frameGeometry.height = clientwindow.oldheight;
-    clientwindow.tile = clientwindow.oldtile;
-    clientwindow.desktops = [workspace.currentDesktop];
 }
 
 //gets a window from a windowlist that is on the current Desktop and in the topmost stacking position
@@ -140,43 +121,48 @@ function registerShortcuts(){
 }
 
 //save old geometry data in client's properties
-function saveOldData(client, bypasscheck){
-    if ((client.size.height < client.output.geometry.height && client.size.width < client.output.geometry.width) || bypasscheck){
-        //about to change from tile location/size to maximized, save the tile window geometry so it can be restored later
-        client.oldx = client.frameGeometry.x;
-        client.oldy = client.frameGeometry.y;
-        client.oldheight = client.frameGeometry.height;
-        client.oldwidth = client.frameGeometry.width;
-        client.oldtile = client.tile;
-    }
+function saveOldData(client){
+    client.oldx = client.frameGeometry.x;
+    client.oldy = client.frameGeometry.y;
+    client.oldheight = client.frameGeometry.height;
+    client.oldwidth = client.frameGeometry.width;
+    client.oldtile = client.tile;
 }
 
-//restore old geometry data from a client
-function restoreOldData(client){
-    if (client.size.height < client.output.geometry.height && client.size.width < client.output.geometry.width){
-        //changed from maximized to tile, apply previously saved geometry data
-        returnToTile(client);
-
-    }
+//return a window to its previous tile
+function restoreOldData(clientwindow){
+    clientwindow.frameGeometry.x = clientwindow.oldx;
+    clientwindow.frameGeometry.y = clientwindow.oldy;
+    clientwindow.frameGeometry.width = clientwindow.oldwidth;
+    clientwindow.frameGeometry.height = clientwindow.oldheight;
+    clientwindow.tile = clientwindow.oldtile;
+    clientwindow.desktops = [workspace.currentDesktop];
 }
 
 //setup connections for a window
 function setupWindowConnections(client){
+
     client.maximizedChanged.connect(function(){
-        restoreOldData(client);
-
+        //restore old data if window not fullscreen
+        if (client.height < client.output.geometry.height && client.width < client.output.geometry.width){
+            restoreOldData(client);
+            client.tile = workspace.tilingForScreen(client.output).bestTileForPosition(client.x, client.y);
+        }
     });
-    client.maximizedAboutToChange.connect(function(){
-        saveOldData(client);
 
-    });
-    client.frameGeometryChanged.connect(function(){
-        // remove assigned tile if window is moved with mouse
-        if (client.move){
+    client.frameGeometryAboutToChange.connect(function(){
+        //remove associated tile if window inside tile is moved by mouse
+        if (client.move && client.tile != null){
             client.tile = null;
+        }
+
+        //save olddata if window not fullscreen
+        if (client.height < client.output.geometry.height && client.width < client.output.geometry.width){
+            saveOldData(client);
         }
     })
 }
+
 
 workspace.windowAdded.connect(setupWindowConnections);
 init();
