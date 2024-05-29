@@ -144,21 +144,29 @@ function setupWindowConnections(client){
 
     client.maximizedChanged.connect(function(){
         //restore old data if window not fullscreen
-        if (client.height < client.output.geometry.height && client.width < client.output.geometry.width){
+        if (client.wasTiled && (client.height < client.output.geometry.height && client.width < client.output.geometry.width)){
             restoreOldData(client);
             client.tile = workspace.tilingForScreen(client.output).bestTileForPosition(client.x, client.y);
+            client.wasTiled = false;
         }
     });
 
+    //remove associated tile if window inside tile is moved by mouse
     client.frameGeometryAboutToChange.connect(function(){
-        //remove associated tile if window inside tile is moved by mouse
         if (client.move && client.tile != null){
             client.tile = null;
+            client.wasTiled = false;
         }
+    })
 
+    client.frameGeometryChanged.connect(function(){
         //save olddata if window not fullscreen
-        if (client.height < client.output.geometry.height && client.width < client.output.geometry.width){
+        if (client.tile != null && (client.height < client.output.geometry.height && client.width < client.output.geometry.width)){
             saveOldData(client);
+        }
+        //set my own flag since client.tile gets removed before any of the signals fire
+        if (client.tile){
+            client.wasTiled = true;
         }
     })
 }
