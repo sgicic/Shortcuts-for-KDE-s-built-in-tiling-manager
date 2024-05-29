@@ -142,16 +142,15 @@ function restoreOldData(clientwindow){
 //setup connections for a window
 function setupWindowConnections(client){
 
+    //restore old data if window not fullscreen and was tiled before
     client.maximizedChanged.connect(function(){
-        //restore old data if window not fullscreen
         if (client.wasTiled && (client.height < client.output.geometry.height && client.width < client.output.geometry.width)){
             restoreOldData(client);
             client.tile = workspace.tilingForScreen(client.output).bestTileForPosition(client.x, client.y);
-            client.wasTiled = false;
         }
     });
 
-    //remove associated tile if window inside tile is moved by mouse
+    //remove associated tile if window inside tile is moved by mouse. Found this was the more consistent compared to using that specific mouse move signal
     client.frameGeometryAboutToChange.connect(function(){
         if (client.move && client.tile != null){
             client.tile = null;
