@@ -172,4 +172,5 @@ function setupWindowConnections(client){
 
 
 workspace.windowAdded.connect(setupWindowConnections);
+workspace.output.wakeUp.connect(setupWindowConnections);
 init();
