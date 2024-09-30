@@ -172,5 +172,7 @@ function setupWindowConnections(client){
 
 
 workspace.windowAdded.connect(setupWindowConnections);
-workspace.output.wakeUp.connect(setupWindowConnections);
 init();
+workspace.screens.forEach((output)=>{
+    output.wakeUp.connect(init);
+});
