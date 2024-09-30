@@ -1,9 +1,9 @@
 /*
- *    Name: Shortcuts for KDE's built-in tiling manager
+ *    Name: Shortkuts (Shortcuts for KDE's built-in tiling manager)
  *    Description: Returns a Maximized window to its previously assigned tile upon unmaximization and adds shortcuts to assign windows to tiles as well as shortcuts to navigate between tiles. Supports Multimonitor setups now.
  *    Author: Seid Gicic
  *    E-Mail: s.gicic@outlook.com
- *    Version: 1.2.1
+ *    Version: 1.0
  *    License: GPLv3
  */
 
